@@ -87,4 +87,35 @@ class Mysql:
             else:
                 print u"插入数据失败，原因 %d : %s" % (e.args[0] ,e.args[1])
             
+    def selectip(self):
+        sql = "SELECT * FROM usefulIp"
+        try:
+            self.cur.execute(sql)
+            result = self.cur.fetchall()
+            return result
+            # self.db.commit()
+            # if result:
+            #     return True
+            # else:
+            #     return False
+        except MySQLdb.Error ,e :
+        # except:
+            self.db.rollback()
+            print u"读取数据失败，原因 %d : %s" % (e.args[0] ,e.args[1])
             
+            
+    def delete(self, identity):
+        sql = "DELETE FROM usefulIp WHERE id = '%d'" % identity
+        try:
+            self.cur.execute(sql)
+            self.db.commit()
+            print 'deleted'
+        except MySQLdb.Error , e:
+            self.db.rollback()
+            print u"删除数据失败，原因 %d : %s" % (e.args[0] ,e.args[1])
+        
+        
+        
+        
+        
+        

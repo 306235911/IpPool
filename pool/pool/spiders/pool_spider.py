@@ -54,15 +54,19 @@ class PoolSpider(scrapy.Spider):
     
     def start_requests(self):
         urls = 'http://www.xicidaili.com/nn/'
-        choice = raw_input('(T)est or (R)un\n')
+        choice = raw_input('(T)est (C)heck (R)un\n')
         if choice == 'T':
             # fp = open('usefulIp.txt' , 'a')
             # fp.write('')
             # fp.close()
             self.mysql.clearnUsefulIp()
             return self.test()
-        else:
+        elif choice == 'R':
             return self.choice()
+        elif choice == 'C':
+            return self.check()
+        else:
+            print 'Wrong input'
         # for i in range(1,11):
         #     print i
         #     yield scrapy.Request(url=urls + str(i), headers=self.headers, callback=self.parse)
@@ -157,3 +161,34 @@ class PoolSpider(scrapy.Spider):
         else:
             print u"保存ip失败"
         self.identity += 1
+    
+    def check(self):
+        url = 'https://www.baidu.com/'
+        headers = {
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            "Accept-Encoding": "gzip, deflate, sdch, br",
+            "Accept-Language": "zh-CN,zh;q=0.8",
+            "Cache-Control": "max-age=0",
+            "Connection": "keep-alive",
+            "Content-Type":" application/x-www-form-urlencoded; charset=UTF-8",
+            'User-Agent': "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:34.0) Gecko/20100101 Firefox/34.0",
+            'Host': "www.baidu.com",
+            "Upgrade-Insecure-Requests": '1',
+            # 'Referer': "http://www.xicidaili.com/nn/1",
+            }
+        UsefulIp = self.mysql.selectip()
+        for eachIp in UsefulIp:
+            pro = eachIp[1]
+            print pro
+            try:
+                yield scrapy.Request(url=url, headers=headers, meta = {'proxy' : pro} ,callback=self.check_parse ,dont_filter = True)
+            except:
+                pass
+                identity = eachIp[0]
+                self.mysql.delete(identity)
+                
+            
+    def check_parse(self, response):
+        print response.meta['proxy']
+        print 'OK'
+        
