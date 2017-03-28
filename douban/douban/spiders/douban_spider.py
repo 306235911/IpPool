@@ -27,9 +27,11 @@ class DoubanSpider(scrapy.Spider):
             'https://www.douban.com/',
         ]
         url = 'https://www.douban.com/'
+        url2 = 'https://www.baidu.com/'
         # for url in urls:
         yield scrapy.Request(url=url, headers=self.headers, callback=self.parse, dont_filter = True)
-
+        yield scrapy.Request(url=url2, headers=self.headers, callback=self.parse, dont_filter = True)
+        
         # # 手动设置成功
         # for url in urls:
         #     yield scrapy.Request(url=url, meta={'proxy': AllPro[0][1]}, headers=self.headers, callback=self.parse)

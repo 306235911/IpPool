@@ -142,7 +142,7 @@ class PoolSpider(scrapy.Spider):
             pro = 'http://' + str(p[1]) + ':' + str(p[2])
             try:
                 print pro
-                yield scrapy.Request(url=url, headers=headers, meta = {'proxy' : pro} ,callback=self.test_parse ,dont_filter = True)
+                yield scrapy.Request(url=url, headers=headers, meta = {'proxy' : pro, 'download_timeout': 10} ,callback=self.test_parse ,dont_filter = True)
             except:
                 print 'next'
         # sys.exit(1)
