@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 import scrapy
 import re
+import mysql
 
 #用于删除所爬文字中带有的html符号的类
 class Tool:
@@ -29,6 +30,7 @@ class Tool:
 
 
 class NewsSpider(scrapy.Spider):
+    mysql = mysql.Mysql()
     tool = Tool()
     name = "news"
     headers = {
@@ -43,6 +45,9 @@ class NewsSpider(scrapy.Spider):
             "Upgrade-Insecure-Requests": '1',
             # 'Referer': "https://www.baidu.com",
             }
+    XinLangid = 0
+    WangYiid = 0
+    TengXunid = 0
 
     def start_requests(self):
         # AllPro = self.mysql.selectData()
@@ -55,6 +60,7 @@ class NewsSpider(scrapy.Spider):
         XinLangUrl = 'http://news.sina.com.cn/hotnews/'
         WangYiUrl = 'http://news.163.com/rank/'
         TengXunUrl = 'http://news.qq.com/'
+        self.mysql.clear('new')
         # for url in urls:
         self.headers['host'] = 'news.sina.com.cn'
         yield scrapy.Request(url=XinLangUrl, headers=self.headers, callback=self.XinLang_parse, dont_filter = True)
@@ -67,17 +73,30 @@ class NewsSpider(scrapy.Spider):
         #     yield scrapy.Request(url=url, meta={'proxy': AllPro[0][1]}, headers=self.headers, callback=self.parse)
 
         # 尝试用下载中间件
-        
+    
+    # done!    
     def XinLang_parse(self, response):
         # 这里爬的是有带url 的， 可以一起放数据库
-        # content = response.xpath('//*[contains(concat( " ", @class, " " ), concat( " ", "ConsTi", " " ))]//a').extract()
-        # for title in content:
-        #     print title.encode('utf-8').decode('utf-8')
-        #     print '\n'
+        content = response.xpath('//*[contains(concat( " ", @class, " " ), concat( " ", "ConsTi", " " ))]//a').extract()
+        # self.mysql.insertData(self.identity, Anip, port)
+        for title in content:
+            pattern1 = re.compile('href="(.+?)"', re.S)
+            pattern2 = re.compile('>(.+?)</a>', re.S)
+            NewTitle = re.findall(pattern1, title)
+            NewUrl = re.findall(pattern2, title)
+            print NewTitle[0]
+            print NewUrl[0]
+            self.mysql.insertData('new', self.XinLangid, NewTitle[0], NewUrl[0].encode('utf-8').decode('utf-8'))
+            
+            self.XinLangid += 1
+            
+            # print title.encode('utf-8').decode('utf-8')
+            # print '\n'
         if response.body:
             print 'Xinlang'
         
     def WangYi_parse(self, response):
+        # # 也有url
         # content = response.xpath('//h2 | //*[contains(concat( " ", @class, " " ), concat( " ", "red", " " ))]').extract()
         # for title in content:
         #     try:
@@ -88,9 +107,9 @@ class NewsSpider(scrapy.Spider):
             print 'WangYi'
             
     def TengXun_parse(self, response):
-        # 也是有url的
-        content = response.xpath('//*[contains(concat( " ", @class, " " ), concat( " ", "linkto", " " ))]').extract()
-        for title in content:
-            print title
+        # # 也是有url的
+        # content = response.xpath('//*[contains(concat( " ", @class, " " ), concat( " ", "linkto", " " ))]').extract()
+        # for title in content:
+        #     print title
         if response.body:
             print 'TengXun'
