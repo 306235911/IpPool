@@ -2,6 +2,11 @@
 import scrapy
 import re
 import mysql
+import testmail
+from scrapy.mail import MailSender
+from scrapy import signals
+import testmail
+
 
 #用于删除所爬文字中带有的html符号的类
 class Tool:
@@ -48,7 +53,20 @@ class NewsSpider(scrapy.Spider):
     XinLangid = 0
     WangYiid = 0
     TengXunid = 0
+    newsid = 0
+    sendmail = testmail.SendMail()
 
+    
+    @classmethod
+    def from_crawler(cls, crawler, *args, **kwargs):
+        spider = super(NewsSpider, cls).from_crawler(crawler, *args, **kwargs)
+        crawler.signals.connect(spider.spider_closed, signal=signals.spider_closed)
+        return spider
+    
+    def spider_closed(self, spider):
+        print 'here'
+        self.sendmail.sending()
+    
     def start_requests(self):
         # AllPro = self.mysql.selectData()
         # print AllPro[0][1]
@@ -68,6 +86,13 @@ class NewsSpider(scrapy.Spider):
         yield scrapy.Request(url=WangYiUrl, headers=self.headers, callback=self.WangYi_parse, dont_filter = True)
         self.headers['host'] = 'news.qq.com'
         yield scrapy.Request(url=TengXunUrl, headers=self.headers, callback=self.TengXun_parse, dont_filter = True)
+        
+        
+        # finally:
+        #     self.mailer.send(to=["306235911@qq.com"], subject="title", body="Some body", cc=["daxiong306235911@sina.com"])
+        # finally:
+        #     if (self.XinLangid == 1 and self.WangYiid == 1 and self.TengXunid == 1):
+        #         self.sendmail.sending()
         # # 手动设置成功
         # for url in urls:
         #     yield scrapy.Request(url=url, meta={'proxy': AllPro[0][1]}, headers=self.headers, callback=self.parse)
@@ -78,17 +103,16 @@ class NewsSpider(scrapy.Spider):
     def XinLang_parse(self, response):
         # 这里爬的是有带url 的， 可以一起放数据库
         content = response.xpath('//*[contains(concat( " ", @class, " " ), concat( " ", "ConsTi", " " ))]//a').extract()
-        # self.mysql.insertData(self.identity, Anip, port)
         for title in content:
             pattern1 = re.compile('href="(.+?)"', re.S)
             pattern2 = re.compile('>(.+?)</a>', re.S)
-            NewTitle = re.findall(pattern1, title)
-            NewUrl = re.findall(pattern2, title)
-            print NewTitle[0]
-            print NewUrl[0]
-            self.mysql.insertData('new', self.XinLangid, NewTitle[0], NewUrl[0].encode('utf-8').decode('utf-8'))
-            
-            self.XinLangid += 1
+            NewUrl = re.findall(pattern1, title)
+            NewTitle = re.findall(pattern2, title)
+            # print NewTitle[0]
+            # print NewUrl[0]
+            self.mysql.insertData('new', self.newsid, NewTitle[0]+u'   (新浪)', NewUrl[0].encode('utf-8').decode('utf-8'))
+            self.XinLangid = 1
+            self.newsid += 1
             
             # print title.encode('utf-8').decode('utf-8')
             # print '\n'
@@ -96,20 +120,33 @@ class NewsSpider(scrapy.Spider):
             print 'Xinlang'
         
     def WangYi_parse(self, response):
-        # # 也有url
-        # content = response.xpath('//h2 | //*[contains(concat( " ", @class, " " ), concat( " ", "red", " " ))]').extract()
-        # for title in content:
-        #     try:
-        #         print title
-        #     except:
-        #         pass
+        # 也有url
+        content = response.xpath('//*[contains(concat( " ", @class, " " ), concat( " ", "red", " " ))]//a').extract()
+        for title in content:
+            pattern1 = re.compile('href="(.+?)"', re.S)
+            pattern2 = re.compile('>(.+?)</a>', re.S)
+            NewUrl = re.findall(pattern1, title)
+            NewTitle = re.findall(pattern2, title)
+            # print NewTitle[0]
+            # print NewUrl[0]
+            self.mysql.insertData('new', self.newsid, NewTitle[0]+u'   (网易)', NewUrl[0].encode('utf-8').decode('utf-8'))
+            self.WangYiid = 1
+            self.newsid += 1
         if response.body:
             print 'WangYi'
             
     def TengXun_parse(self, response):
-        # # 也是有url的
-        # content = response.xpath('//*[contains(concat( " ", @class, " " ), concat( " ", "linkto", " " ))]').extract()
-        # for title in content:
-        #     print title
+        # 也是有url的
+        content = response.xpath('//*[contains(concat( " ", @class, " " ), concat( " ", "linkto", " " ))]').extract()
+        for title in content:
+            pattern1 = re.compile('href="(.+?)"', re.S)
+            pattern2 = re.compile('>(.+?)</a>', re.S)
+            NewUrl = re.findall(pattern1, title)
+            NewTitle = re.findall(pattern2, title)
+            # print NewTitle[0]
+            # print NewUrl[0]
+            self.mysql.insertData('new', self.newsid, NewTitle[0]+u'   (腾讯)', NewUrl[0].encode('utf-8').decode('utf-8'))
+            self.TengXunid = 1
+            self.newsid += 1
         if response.body:
             print 'TengXun'

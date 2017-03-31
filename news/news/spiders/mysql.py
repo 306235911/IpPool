@@ -75,9 +75,9 @@ class Mysql:
     #             print u"数据已存在，未插入数据"
     #         else:
     #             print u"插入数据失败，原因 %d : %s" % (e.args[0] ,e.args[1])
-     
-    def selectData(self):
-        sql = "SELECT * FROM usefulIp"
+    
+    def selectData(self, table):
+        sql = "SELECT * FROM " + table
         try:
             self.cur.execute(sql)
             result = self.cur.fetchall()
@@ -91,6 +91,22 @@ class Mysql:
         # except:
             self.db.rollback()
             print u"读取数据失败，原因 %d : %s" % (e.args[0] ,e.args[1])
+     
+    # def selectData(self):
+    #     sql = "SELECT * FROM usefulIp"
+    #     try:
+    #         self.cur.execute(sql)
+    #         result = self.cur.fetchall()
+    #         return result
+    #         # self.db.commit()
+    #         # if result:
+    #         #     return True
+    #         # else:
+    #         #     return False
+    #     except MySQLdb.Error ,e :
+    #     # except:
+    #         self.db.rollback()
+    #         print u"读取数据失败，原因 %d : %s" % (e.args[0] ,e.args[1])
             
     def usefulIp(self, identity, proxy):
         sql = "INSERT INTO usefulIp VALUES " + "(%s,%s)"
