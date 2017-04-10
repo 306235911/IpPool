@@ -35,11 +35,11 @@ class Tool:
         return x.strip()
 
 
-class PoolSpider(scrapy.Spider):
+class TestpoolSpider(scrapy.Spider):
     identity = 0
     tool = Tool()
     mysql = mysql.Mysql()
-    name = "pool"
+    name = "testpool"
     headers = {
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
             "Accept-Encoding": "gzip, deflate, sdch, br",
@@ -56,12 +56,12 @@ class PoolSpider(scrapy.Spider):
     def start_requests(self):
         urls = 'http://www.xicidaili.com/nn/'
         # urls = 'http://www.kuaidaili.com/proxylist/1/'
-        self.mysql.clearnIp()
-        for i in range(1,11):
-            print i
-            yield scrapy.Request(url=urls + str(i), headers=self.headers, callback=self.parse)
+        # self.mysql.clearnIp()
+        # for i in range(1,11):
+        #     print i
+        #     yield scrapy.Request(url=urls + str(i), headers=self.headers, callback=self.parse)
         
-        # return self.test()
+        return self.test()
         
         
         # # urls = 'http://www.xicidaili.com/nn/'

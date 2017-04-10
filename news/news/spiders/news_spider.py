@@ -75,8 +75,8 @@ class NewsSpider(scrapy.Spider):
         urls = [
             'https://www.douban.com/',
         ]
-        XinLangUrl = 'http://news.sina.com.cn/hotnews/'
-        WangYiUrl = 'http://news.163.com/rank/'
+        XinLangUrl = 'http://news.sina.com.cn'
+        WangYiUrl = 'http://news.163.com/'
         TengXunUrl = 'http://news.qq.com/'
         self.mysql.clear('new')
         # for url in urls:
@@ -102,15 +102,19 @@ class NewsSpider(scrapy.Spider):
     # done!    
     def XinLang_parse(self, response):
         # 这里爬的是有带url 的， 可以一起放数据库
-        content = response.xpath('//*[contains(concat( " ", @class, " " ), concat( " ", "ConsTi", " " ))]//a').extract()
+        # content = response.xpath('//*[contains(concat( " ", @class, " " ), concat( " ", "ConsTi", " " ))]//a').extract()
+        content = response.xpath('//*[(@id = "all_list_01")]//a').extract()
         for title in content:
+            # print title.encode('utf-8').decode('utf-8')
             pattern1 = re.compile('href="(.+?)"', re.S)
-            pattern2 = re.compile('>(.+?)</a>', re.S)
+            pattern2 = re.compile('/em>(.+?)</a>', re.S)
             NewUrl = re.findall(pattern1, title)
+            # print NewUrl[0]
             NewTitle = re.findall(pattern2, title)
+            # print ''.join(NewTitle).encode('utf-8').decode('utf-8')
             # print NewTitle[0]
             # print NewUrl[0]
-            self.mysql.insertData('new', self.newsid, NewTitle[0]+u'   (新浪)', NewUrl[0].encode('utf-8').decode('utf-8'))
+            self.mysql.insertData('new', self.newsid, ''.join(NewTitle)+u'   (新浪)', NewUrl[0].encode('utf-8').decode('utf-8'))
             self.XinLangid = 1
             self.newsid += 1
             
@@ -121,7 +125,8 @@ class NewsSpider(scrapy.Spider):
         
     def WangYi_parse(self, response):
         # 也有url
-        content = response.xpath('//*[contains(concat( " ", @class, " " ), concat( " ", "red", " " ))]//a').extract()
+        # content = response.xpath('//*[contains(concat( " ", @class, " " ), concat( " ", "red", " " ))]//a').extract()
+        content = response.xpath('//*[contains(concat( " ", @class, " " ), concat( " ", "mod_hot_rank", " " ))]//li//a').extract()
         for title in content:
             pattern1 = re.compile('href="(.+?)"', re.S)
             pattern2 = re.compile('>(.+?)</a>', re.S)
@@ -132,12 +137,16 @@ class NewsSpider(scrapy.Spider):
             self.mysql.insertData('new', self.newsid, NewTitle[0]+u'   (网易)', NewUrl[0].encode('utf-8').decode('utf-8'))
             self.WangYiid = 1
             self.newsid += 1
+            
+            # print title.encode('utf-8').decode('utf-8')
+            # print '\n'
         if response.body:
             print 'WangYi'
             
     def TengXun_parse(self, response):
         # 也是有url的
-        content = response.xpath('//*[contains(concat( " ", @class, " " ), concat( " ", "linkto", " " ))]').extract()
+        # content = response.xpath('//*[contains(concat( " ", @class, " " ), concat( " ", "linkto", " " ))]').extract()
+        content = response.xpath('//*[contains(concat( " ", @class, " " ), concat( " ", "sb", " " ))]//a').extract()
         for title in content:
             pattern1 = re.compile('href="(.+?)"', re.S)
             pattern2 = re.compile('>(.+?)</a>', re.S)
@@ -148,5 +157,8 @@ class NewsSpider(scrapy.Spider):
             self.mysql.insertData('new', self.newsid, NewTitle[0]+u'   (腾讯)', NewUrl[0].encode('utf-8').decode('utf-8'))
             self.TengXunid = 1
             self.newsid += 1
+            
+            # print title.encode('utf-8').decode('utf-8')
+            # print '\n'
         if response.body:
             print 'TengXun'

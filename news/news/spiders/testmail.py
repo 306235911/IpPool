@@ -29,8 +29,10 @@ class SendMail():
         #邮件发送方邮箱地址
         sender = 'daxiong306235911@sina.com'  
         #邮件接受方邮箱地址，注意需要[]包裹，这意味着你可以写多个邮件地址群发
-        # receivers = ['306235911@qq.com', ' 591640519@qq.com']
-        receivers = ['306235911@qq.com']
+        # receivers = ['306235911@qq.com', '591640519@qq.com']
+        receivers = ['daxiong306235911@sina.com']
+        # receivers = ['306235911@qq.com']
+        # receivers = ['306235911@qq.com', 'daxiong306235911@sina.com']
         
         ##设置eamil信息
         #添加一个MIMEmultipart类，处理正文及附件
