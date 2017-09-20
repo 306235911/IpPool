@@ -52,9 +52,11 @@ DOWNLOAD_DELAY = 2
 
 # Enable or disable downloader middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
-#DOWNLOADER_MIDDLEWARES = {
-#    'pool.middlewares.MyCustomDownloaderMiddleware': 543,
-#}
+# DOWNLOADER_MIDDLEWARES = {
+#     'pool.middlewares.ProxyMiddleware': 100,
+#     'scrapy.contrib.downloadermiddleware.httpproxy.HttpProxyMiddleware': 110
+# }
+# DOWNLOAD_TIMEOUT = 10
 
 # Enable or disable extensions
 # See http://scrapy.readthedocs.org/en/latest/topics/extensions.html

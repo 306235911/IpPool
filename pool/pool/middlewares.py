@@ -6,6 +6,8 @@
 # http://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
 from scrapy import signals
+import mysql
+import random
 
 
 class PoolSpiderMiddleware(object):
@@ -54,3 +56,18 @@ class PoolSpiderMiddleware(object):
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+        
+        
+# class ProxyMiddleware(object):
+#     
+#     mysql = mysql.Mysql()
+#     
+#     def process_request(self, request, spider):
+#         AllPro = self.mysql.selectData()
+#         length = len(AllPro)
+#         # print length
+#         print '22222222222222222222'
+#         n = random.randint(0, length-1)
+#         pro = AllPro[n][1]
+#         print pro
+#         request.meta['proxy'] = pro

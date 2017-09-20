@@ -6,6 +6,8 @@ import testmail
 from scrapy.mail import MailSender
 from scrapy import signals
 import testmail
+import json
+import time
 
 
 #用于删除所爬文字中带有的html符号的类
@@ -78,6 +80,7 @@ class NewsSpider(scrapy.Spider):
         XinLangUrl = 'http://news.sina.com.cn'
         WangYiUrl = 'http://news.163.com/'
         TengXunUrl = 'http://news.qq.com/'
+        LaoJuUrl = 'http://space.bilibili.com/ajax/member/getSubmitVideos?mid=423895'
         self.mysql.clear('new')
         # for url in urls:
         self.headers['host'] = 'news.sina.com.cn'
@@ -86,6 +89,8 @@ class NewsSpider(scrapy.Spider):
         yield scrapy.Request(url=WangYiUrl, headers=self.headers, callback=self.WangYi_parse, dont_filter = True)
         self.headers['host'] = 'news.qq.com'
         yield scrapy.Request(url=TengXunUrl, headers=self.headers, callback=self.TengXun_parse, dont_filter = True)
+        self.headers['host'] = 'space.bilibili.com'
+        yield scrapy.Request(url=LaoJuUrl, headers=self.headers, callback=self.laoju_parse, dont_filter = True)
         
         
         # finally:
@@ -103,11 +108,11 @@ class NewsSpider(scrapy.Spider):
     def XinLang_parse(self, response):
         # 这里爬的是有带url 的， 可以一起放数据库
         # content = response.xpath('//*[contains(concat( " ", @class, " " ), concat( " ", "ConsTi", " " ))]//a').extract()
-        content = response.xpath('//*[(@id = "all_list_01")]//a').extract()
+        content = response.xpath('//*[(@id = "syncad_1")]//a').extract()
         for title in content:
             # print title.encode('utf-8').decode('utf-8')
             pattern1 = re.compile('href="(.+?)"', re.S)
-            pattern2 = re.compile('/em>(.+?)</a>', re.S)
+            pattern2 = re.compile('>(.+?)</a>', re.S)
             NewUrl = re.findall(pattern1, title)
             # print NewUrl[0]
             NewTitle = re.findall(pattern2, title)
@@ -162,3 +167,22 @@ class NewsSpider(scrapy.Spider):
             # print '\n'
         if response.body:
             print 'TengXun'
+
+    def laoju_parse(self, response):
+        vlist = json.loads(response.body)
+        created = vlist['data']['vlist'][0]['created']
+        # created = json.loads(str(vlist))
+        title = vlist['data']['vlist'][0]['title']
+        description = vlist['data']['vlist'][0]['description']
+
+        updated = u"更新啦" + "," + title + "," + description
+        no_update = u"更新个屁" + "," + u"屁" + "," + u"屁"
+        if int(time.time()) - int(created) < 86400:
+            sql = "update config set value='%s' where field='laoju';" % updated
+            self.mysql.NormalUpdateData(sql)
+        else:
+            sql = "update config set value='%s' where field='laoju';" % no_update
+            self.mysql.NormalUpdateData(sql)
+
+        # pattern1 = re.compile('href="(.+?)"', re.S)
+        # NewUrl = re.findall(pattern1, title)
